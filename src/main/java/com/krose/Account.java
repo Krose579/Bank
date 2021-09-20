@@ -1,29 +1,29 @@
 package com.krose;
 
-public abstract class Account {
-    protected int accountNumber;
-
+public class Account {
+    protected final int accountNumber;
     protected double balance;
-
-    protected double amount;
-
-    protected Account(){
-    }
 
     public Account (int accountNumber){
         this.accountNumber = accountNumber;
-        balance = 0;
-    }
-
-    public double getBalance(){
-        return this.balance;
+        this.balance = 0;
     }
 
     public int getAccountNumber(){
         return this.accountNumber;
     }
 
-    public abstract void deposit(double amount);
+    public double getBalance(){
+        return this.balance;
+    }
 
-    public abstract void withdraw(double amount);
+    public void deposit(double amount) {
+
+
+    }
+
+    public boolean withdraw(double amount) {
+        return false;
+
+    }
 }
