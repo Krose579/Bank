@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="display-ext-1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../DisplayExt/out/artifacts/DisplayExt_jar/display-ext-1.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

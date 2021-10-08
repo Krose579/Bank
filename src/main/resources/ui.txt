@@ -1,0 +1,33 @@
+### MAIN ###
+main: container
+main-menu: menu, Main Menu, Create Account, Deposit, Withdraw, Transaction History, Daily Report, View All Accounts, Exit
+
+### CREATE ACCOUNT ###
+create-account: container
+create-account-type: menu, Account Type, Checking, Savings
+
+### CREATE CHECKING ACCOUNT ###
+create-checking: container
+create-checking-id: field, integer, Account Number
+
+### CREATE SAVINGS ACCOUNT ###
+create-savings: container
+create-savings-id: field, integer, Account Number
+create-savings-ir: field, double, Interest Rate
+
+### TRANSACTION ###
+transaction: container
+transaction-id: field, integer, Account Number
+transaction-amount: field, double, Amount
+
+### TRANSACTION HISTORY ###
+transaction-history: container
+# Dynamically Created
+
+### DAILY REPORT ###
+daily-report: container
+# Dynamically Created
+
+### VIEW ACCOUNTS ###
+view-accounts: container
+# Dynamically Created
