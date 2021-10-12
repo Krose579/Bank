@@ -1,23 +1,26 @@
 package com.krose.bank;
 
-import com.krose.display.NodeManager;
-import com.krose.display.OnNodeContainerExitListener;
-import com.krose.display.ValueContainer;
+import com.krose.display.*;
 import com.krose.io.Input;
 import com.krose.io.Output;
 import org.krose.NodeReader;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Application implements OnNodeContainerExitListener {
+    private static final Input INPUT = new Input();
+    private static final Output OUTPUT = new Output();
+
     private static Application instance;
 
     private final NodeManager manager;
-    private List<Account> accounts;
+    private final List<Account> accounts;
     private boolean isDeposit;
 
     public Application(NodeManager manager) throws IOException {
+        OUTPUT.setLength(100);
         this.manager = manager;
         this.accounts = Database.load();
         this.isDeposit = false;
@@ -84,42 +87,70 @@ public class Application implements OnNodeContainerExitListener {
             if (account != null) {
                 Transaction t = new Transaction(amount);
                 account.addTransaction(t);
-                System.out.printf("%s was successful. Current Balance: $%.2f.%n", (t.isDeposit() ? "Deposit" : "Withdraw"), account.getBalance());
+                OUTPUT.write(String.format("%s was successful. Current Balance: $%.2f.%n", (t.isDeposit() ? "Deposit" : "Withdraw"), account.getBalance()));
             }
-            else System.out.println("Could not find account");
-        } else {
-            System.out.println("Skipping transaction due to empty amount.");
-        }
+            else OUTPUT.write("Could not find account");
+        } else OUTPUT.write("Skipping transaction due to empty amount.");
         manager.next(Constants.CONTAINER_MAIN);
     }
 
     private void processOnExitTransactionHistory(ValueContainer valueContainer) {
-        System.out.println("Exiting Transaction History");
         manager.next(Constants.CONTAINER_MAIN);
     }
 
     private void processOnExitDailyReport(ValueContainer valueContainer) {
-        System.out.println("Exiting Daily Report");
         manager.next(Constants.CONTAINER_MAIN);
     }
 
     private void processOnExitViewAccounts(ValueContainer valueContainer) {
-        System.out.println("Exiting View Account");
         manager.next(Constants.CONTAINER_MAIN);
     }
 
     private void setupManager() {
         if (manager == null) return;
-        manager.setInput(new Input());
-        manager.setOutput(new Output());
+        manager.setInput(INPUT);
+        manager.setOutput(OUTPUT);
         manager.getNodeContainer(Constants.CONTAINER_MAIN).setListener(this);
         manager.getNodeContainer(Constants.CONTAINER_CREATE_ACCOUNT).setListener(this);
         manager.getNodeContainer(Constants.CONTAINER_CREATE_CHECKING).setListener(this);
         manager.getNodeContainer(Constants.CONTAINER_CREATE_SAVINGS).setListener(this);
         manager.getNodeContainer(Constants.CONTAINER_TRANSACTION).setListener(this);
-        manager.getNodeContainer(Constants.CONTAINER_TRANSACTION_HISTORY).setListener(this);
-        manager.getNodeContainer(Constants.CONTAINER_DAILY_REPORT).setListener(this);
-        manager.getNodeContainer(Constants.CONTAINER_VIEW_ACCOUNTS).setListener(this);
+        NodeContainer transactionHistory = manager.getNodeContainer(Constants.CONTAINER_TRANSACTION_HISTORY);
+        transactionHistory.setListener(this);
+        transactionHistory.addNode(new Node(Constants.ID_TRANSACTION_HISTORY_NODE) {
+            @Override
+            public void execute() {
+                getOutput().write("Enter Account Number:");
+                int accountNumber = getInput().getInteger();
+                Account account = getAccount(accountNumber);
+                if (account == null) getOutput().write("Account not found.");
+                else for (Transaction t : account.getTransactions()) getOutput().write(String.format("%s $%.2f on %s", t.isDeposit() ? "Deposited" : "Withdrew", t.getUnsignedAmount(), DateUtil.format(t.getDate())));
+            }
+        });
+        NodeContainer dailyReport = manager.getNodeContainer(Constants.CONTAINER_DAILY_REPORT);
+        dailyReport.setListener(this);
+        dailyReport.addNode(new Node(Constants.ID_DAILY_REPORT_NODE) {
+            @Override
+            public void execute() {
+                List<String> display = new ArrayList<>();
+                for (Account a: accounts) {
+                    display.clear();
+                    display.add(String.format("Account %d", a.getAccountNumber()));
+                    for (Transaction t : a.getTransactions()) {
+                        if (DateUtil.today().before(t.getDate())) display.add(String.format("> %s $%.2f", t.isDeposit() ? "Deposited" : "Withdrew", t.getUnsignedAmount()));
+                    }
+                    if (display.size() > 1) for (String line : display) getOutput().write(line);
+                }
+            }
+        });
+        NodeContainer viewAccounts = manager.getNodeContainer(Constants.CONTAINER_VIEW_ACCOUNTS);
+        viewAccounts.setListener(this);
+        viewAccounts.addNode(new Node(Constants.ID_VIEW_ACCOUNTS_NODE) {
+            @Override
+            public void execute() {
+                for (Account a : accounts ) getOutput().write(String.format("%s %d: $%.2f", a.isChecking() ? "Checking" : "Savings", a.getAccountNumber(), a.getBalance()));
+            }
+        });
         manager.next(Constants.CONTAINER_MAIN);
     }
 
@@ -134,27 +165,5 @@ public class Application implements OnNodeContainerExitListener {
         if (instance != null) return;
         instance = new Application(NodeReader.createNodeManager("/" + Constants.RES_UI));
         instance.execute();
-//        List<Account> accounts = new ArrayList<>();
-//        Account testAccount = Account.createChecking(101);
-//        testAccount.setBalance(102.50);
-//        accounts.add(testAccount);
-//        accounts.add(Account.createChecking(102));
-//        accounts.add(Account.createChecking(103));
-//        accounts.add(Account.createChecking(104));
-//        accounts.add(Account.createChecking(105));
-//        accounts.add(Account.createSavings(201, 1.0));
-//        accounts.add(Account.createSavings(202, 1.0));
-//        accounts.add(Account.createSavings(203, 1.0));
-//        accounts.add(Account.createSavings(204, 1.0));
-//        accounts.add(Account.createSavings(205, 1.0));
-//        Database.save(accounts);
-//        System.out.println(accounts.size());
-//        accounts.clear();
-//        System.out.println(accounts.size());
-//        accounts = Database.load();
-//        System.out.println(accounts.size());
-//        for (Account account : accounts) {
-//            System.out.println("Is checking: " + account.isChecking() + " -> " + account.getAccountNumber() + " " + account.getBalance() + (account.isChecking() ? "" : (" " + account.getInterest())));
-//        }
     }
 }

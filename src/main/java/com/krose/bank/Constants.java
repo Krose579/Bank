@@ -16,5 +16,8 @@ public final class Constants {
     public static final String ID_CREATE_SAVINGS_INTEREST_RATE = "create-savings-ir";
     public static final String ID_TRANSACTION_ID = "transaction-id";
     public static final String ID_TRANSACTION_AMOUNT = "transaction-amount";
+    public static final String ID_TRANSACTION_HISTORY_NODE = "transaction-history-node";
+    public static final String ID_DAILY_REPORT_NODE = "daily-report-node";
+    public static final String ID_VIEW_ACCOUNTS_NODE = "view-accounts-node";
     public static final String RES_UI = "ui.txt";
 }
